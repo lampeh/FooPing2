@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="prefActionBattery">Batteriezustand</string>
+    <string name="prefActionConn">Netzwerkverbindung</string>
+    <string name="prefActionLocGPS">Letzte GPS-Position</string>
+    <string name="prefActionLocNet">Letzte Netzwerk-Position</string>
+    <string name="prefActionWifi">WLAN-Scan</string>
+    <string name="prefDataSettings">Datenquellen</string>
+    <string name="prefServerSettings">Servereinstellungen</string>
+</resources>

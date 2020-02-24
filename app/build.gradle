@@ -1,0 +1,42 @@
+apply plugin: 'com.android.application'
+
+apply plugin: 'kotlin-android'
+
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+    defaultConfig {
+        applicationId "org.openchaos.android.fooping2"
+        minSdkVersion 28
+        targetSdkVersion 29
+        versionCode 2
+        versionName '2.0'
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        resConfigs 'en', 'de'
+    }
+    buildTypes {
+        release {
+            minifyEnabled = true
+            shrinkResources true
+        }
+        debug {
+            //minifyEnabled = true
+            //shrinkResources true
+            versionNameSuffix = '-dbg'
+        }
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.core:core-ktx:1.2.0'
+    testImplementation 'junit:junit:4.13'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation 'androidx.work:work-runtime:2.3.2'
+    implementation 'androidx.preference:preference:1.1.0'
+    implementation 'androidx.fragment:fragment:1.2.2'
+}
