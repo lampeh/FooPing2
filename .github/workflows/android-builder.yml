@@ -19,9 +19,9 @@ jobs:
         run: env
 
       # TODO: include as gradle property / in build version?
-      # TODO: check result
+      # TODO: check result is not empty
       - name: Extract runner image version
-        run: awk 'BEGIN { FS = "=" } ; /^ImageVersion/ { print $2 }' </etc/environment >"${GITHUB_WORKSPACE}/Github_ImageVersion.txt"
+        run: echo "${ImageVersion}" >"${GITHUB_WORKSPACE}/Github_ImageVersion.txt"
 
       - name: Grant permission to update SDK dir
         run: sudo chown "${USER}.${USER}" "${ANDROID_SDK_ROOT}" "${ANDROID_SDK_ROOT}"/*
