@@ -80,17 +80,17 @@ jobs:
           name: FooPing2-apk
           path: app/build/outputs/apk/
 
-      - name: Archive Reports
-        uses: actions/upload-artifact@v1
-        with:
-          name: FooPing2-reports
-          path: app/build/outputs/reports/
-
       - name: Archive R8 Mapping
         uses: actions/upload-artifact@v1
         with:
           name: FooPing2-mapping
           path: app/build/outputs/mapping/
+
+      - name: Archive Reports
+        uses: actions/upload-artifact@v1
+        with:
+          name: FooPing2-reports
+          path: app/build/reports/
 
       - name: Unmount SDK cache overlay
         env:
