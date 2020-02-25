@@ -29,8 +29,7 @@ jobs:
       - name: Prepare SDK cache overlay
         env:
           TMPDIR: ${{ runner.temp }}
-        run: |
-          mkdir -p "${TMPDIR}/sdk-overlay/"{merged,upper,work}
+        run: mkdir -p "${TMPDIR}/sdk-overlay/"{merged,upper,work}
 
       - name: Cache SDK updates
         uses: actions/cache@v1
@@ -48,6 +47,7 @@ jobs:
           sudo chown "${USER}.${USER}" "${TMPDIR}/sdk-overlay/merged"
           ls -la "${TMPDIR}/sdk-overlay/merged/"
 
+      # TODO: /build.gradle contains gradle-plugin version. include in hash?
       - name: Cache gradle/wrapper
         uses: actions/cache@v1
         env:
