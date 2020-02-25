@@ -77,19 +77,19 @@ jobs:
       - name: Archive APKs
         uses: actions/upload-artifact@v1
         with:
-          name: ${{ github.ref }}-apk
+          name: FooPing2-apk
           path: app/build/outputs/apk/
 
       - name: Archive Reports
         uses: actions/upload-artifact@v1
         with:
-          name: ${{ github.ref }}-reports
+          name: FooPing2-reports
           path: app/build/outputs/reports/
 
       - name: Archive R8 Mapping
         uses: actions/upload-artifact@v1
         with:
-          name: ${{ github.ref }}-mapping
+          name: FooPing2-mapping
           path: app/build/outputs/mapping/
 
       - name: Unmount SDK cache overlay
