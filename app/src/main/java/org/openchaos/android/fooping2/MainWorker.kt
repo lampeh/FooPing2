@@ -14,18 +14,32 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 import java.math.BigDecimal
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
+import java.nio.charset.Charset
+import java.security.MessageDigest
+import java.util.zip.GZIPOutputStream
+import javax.crypto.Cipher
+import javax.crypto.CipherOutputStream
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 
 // TODO: refactor data sources into plugins
+// TODO: refactor exfiltrators into plugins
+// TODO: refactor transformers into plugins
+
 
 class MainWorker(appContext: Context, workerParams: WorkerParameters)
     : Worker(appContext, workerParams) {
 
     private val TAG: String = this.javaClass.simpleName
+
+    private lateinit var cryptKeySpec: SecretKeySpec
+    private lateinit var hmacKeySpec: SecretKeySpec
 
 
     @Suppress("NOTHING_TO_INLINE")
@@ -34,11 +48,40 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters)
             .stripTrailingZeros().toDouble()
     }
 
+    private fun setKeys(secret: String) {
+        val md = MessageDigest.getInstance("SHA-256")
+        val cryptKeyHash = md.digest(secret.toByteArray())
+
+        cryptKeySpec = SecretKeySpec(cryptKeyHash, "AES")
+        hmacKeySpec = SecretKeySpec(md.digest(cryptKeyHash), "HmacSHA256")
+    }
+
     private fun sendMessage(socket: DatagramSocket, json: JSONObject) {
         Log.d(TAG, "sendMessage(): $json")
 
+//        val cipher = Cipher.getInstance("AES/CFB8/NoPadding").apply { init(Cipher.ENCRYPT_MODE, cryptKeySpec) }
+        val mac = Mac.getInstance("HmacSHA256").apply { init(hmacKeySpec) }
+
+        val baos = ByteArrayOutputStream()
+//        val cos = CipherOutputStream(baos, cipher)
+//        val zos = GZIPOutputStream(cos)
+        val zos = GZIPOutputStream(baos)
+
+        // store IV block
+//        baos.write(cipher.iv)
+
+        // compress and encrypt
+        zos.write(json.toString().toByteArray())
+        zos.close() // TODO: flushes and closes all the underlying streams, right?
+
+        // append HMAC
+        baos.write(mac.doFinal(baos.toByteArray()))
+
+        val output = baos.toByteArray()
+        baos.close() // Closing a ByteArrayOutputStream has no effect
+
         // TODO: check maximum datagram size
-        val output = json.toString().toByteArray()
+        Log.d(TAG, "sending ${output.size} bytes")
         socket.send(DatagramPacket(output, output.size, socket.remoteSocketAddress))
     }
 
@@ -54,10 +97,18 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters)
         val locationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager?
 
 
+        val secret = prefs.getString("SecretKey", null)
+        if (secret.isNullOrEmpty()) {
+            Log.e(TAG,"No encryption key")
+            return Result.failure()
+        }
+
+        setKeys(secret)
+
         // verify config, prepare socket
         try {
             val hostName = prefs.getString("Host", null)
-            if (hostName.isNullOrEmpty()) {
+            if (hostName.isNullOrBlank()) {
                 Log.e(TAG, "Server name not set")
                 return Result.failure()
             }

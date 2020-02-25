@@ -47,12 +47,10 @@
             app:iconSpaceReserved="false"
             app:useSimpleSummaryProvider="true" />
 
-        <!-- TODO: implement encryption -->
         <EditTextPreference
             android:key="SecretKey"
             android:singleLine="true"
             android:title="@string/prefSecretKey"
-            app:enabled="false"
             app:iconSpaceReserved="false"
             app:useSimpleSummaryProvider="false" />
     </PreferenceCategory>
