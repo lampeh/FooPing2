@@ -50,7 +50,10 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         val md = MessageDigest.getInstance("SHA-256")
         val cryptKeyHash = md.digest(secret.toByteArray())
 
+        // encryption key = sha256(secret)
         cryptKeySpec = SecretKeySpec(cryptKeyHash, "AES")
+
+        // hmac key = sha256(sha256(secret))
         hmacKeySpec = SecretKeySpec(md.digest(cryptKeyHash), "HmacSHA256")
     }
 
@@ -58,8 +61,6 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         Log.d(TAG, "sendMessage(): $json")
 
         val cipher = Cipher.getInstance("AES/CFB8/NoPadding").apply { init(Cipher.ENCRYPT_MODE, cryptKeySpec) }
-        val mac = Mac.getInstance("HmacSHA256").apply { init(hmacKeySpec) }
-
         val baos = ByteArrayOutputStream()
 
         // TODO: header flags
@@ -67,21 +68,18 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         // store IV block first
         baos.write(cipher.iv)
 
-        val cos = CipherOutputStream(baos, cipher)
-        val zos = GZIPOutputStream(cos)
-
         // compress and encrypt
+        val zos = GZIPOutputStream(CipherOutputStream(baos, cipher))
         zos.write(json.toString().toByteArray())
-        zos.close() // TODO: flushes and closes all the underlying streams, right?
+        zos.close()
 
         // append HMAC
-        baos.write(mac.doFinal(baos.toByteArray()))
+        baos.write(Mac.getInstance("HmacSHA256").apply { init(hmacKeySpec) }.doFinal(baos.toByteArray()))
 
         val output = baos.toByteArray()
-        baos.close() // Closing a ByteArrayOutputStream has no effect
+        Log.d(TAG, "sending ${output.size} bytes")
 
         // TODO: check maximum datagram size
-        Log.d(TAG, "sending ${output.size} bytes")
         socket.send(DatagramPacket(output, output.size, socket.remoteSocketAddress))
     }
 
