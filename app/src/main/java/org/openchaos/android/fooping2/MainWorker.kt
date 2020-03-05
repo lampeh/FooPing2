@@ -69,9 +69,10 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         baos.write(cipher.iv)
 
         // compress and encrypt
-        val zos = GZIPOutputStream(CipherOutputStream(baos, cipher))
-        zos.write(json.toString().toByteArray())
-        zos.close()
+        GZIPOutputStream(CipherOutputStream(baos, cipher)).apply {
+            write(json.toString().toByteArray())
+            close()
+        }
 
         // append HMAC
         baos.write(Mac.getInstance("HmacSHA256").apply { init(hmacKeySpec) }.doFinal(baos.toByteArray()))
