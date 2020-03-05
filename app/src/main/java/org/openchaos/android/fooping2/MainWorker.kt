@@ -21,6 +21,8 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 import java.security.MessageDigest
 import java.util.zip.GZIPOutputStream
+import javax.crypto.Cipher
+import javax.crypto.CipherOutputStream
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
@@ -55,16 +57,18 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
     private fun sendMessage(socket: DatagramSocket, json: JSONObject) {
         Log.d(TAG, "sendMessage(): $json")
 
-//        val cipher = Cipher.getInstance("AES/CFB8/NoPadding").apply { init(Cipher.ENCRYPT_MODE, cryptKeySpec) }
+        val cipher = Cipher.getInstance("AES/CFB8/NoPadding").apply { init(Cipher.ENCRYPT_MODE, cryptKeySpec) }
         val mac = Mac.getInstance("HmacSHA256").apply { init(hmacKeySpec) }
 
         val baos = ByteArrayOutputStream()
-//        val cos = CipherOutputStream(baos, cipher)
-//        val zos = GZIPOutputStream(cos)
-        val zos = GZIPOutputStream(baos)
 
-        // store IV block
-//        baos.write(cipher.iv)
+        // TODO: header flags
+
+        // store IV block first
+        baos.write(cipher.iv)
+
+        val cos = CipherOutputStream(baos, cipher)
+        val zos = GZIPOutputStream(cos)
 
         // compress and encrypt
         zos.write(json.toString().toByteArray())
