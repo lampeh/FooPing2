@@ -30,14 +30,11 @@
         android:theme="@style/Theme.AppCompat.DayNight"
         tools:ignore="GoogleAppIndexingWarning">
 
-        <activity
-            android:name=".MainActivity"
-            android:stateNotNeeded="true">
+        <activity android:name=".MainActivity" android:stateNotNeeded="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 </manifest>

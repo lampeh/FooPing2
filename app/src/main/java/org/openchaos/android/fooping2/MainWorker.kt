@@ -88,13 +88,11 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
     override fun doWork(): Result {
         Log.d(TAG, "doWork()")
 
+        val locationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager?
+
         val ts = System.currentTimeMillis()
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-        val socket = DatagramSocket()
-
-        val locationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager?
-
 
         val secret = prefs.getString("SecretKey", null)
         if (secret.isNullOrEmpty()) {
@@ -103,6 +101,8 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         }
 
         setKeys(secret)
+
+        val socket = DatagramSocket()
 
         // verify config, prepare socket
         try {
