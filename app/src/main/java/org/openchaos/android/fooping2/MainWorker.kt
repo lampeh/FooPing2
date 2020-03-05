@@ -19,11 +19,8 @@ import java.math.BigDecimal
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
-import java.nio.charset.Charset
 import java.security.MessageDigest
 import java.util.zip.GZIPOutputStream
-import javax.crypto.Cipher
-import javax.crypto.CipherOutputStream
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
@@ -33,8 +30,7 @@ import javax.crypto.spec.SecretKeySpec
 // TODO: refactor transformers into plugins
 
 
-class MainWorker(appContext: Context, workerParams: WorkerParameters)
-    : Worker(appContext, workerParams) {
+class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
 
     private val TAG: String = this.javaClass.simpleName
 
@@ -99,7 +95,7 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters)
 
         val secret = prefs.getString("SecretKey", null)
         if (secret.isNullOrEmpty()) {
-            Log.e(TAG,"No encryption key")
+            Log.e(TAG, "No encryption key")
             return Result.failure()
         }
 

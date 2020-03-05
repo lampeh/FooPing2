@@ -3,8 +3,8 @@ package org.openchaos.android.fooping2
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.CompoundButton
 import android.widget.Toast
-import android.widget.ToggleButton
 import androidx.fragment.app.FragmentActivity
 import androidx.work.*
 import java.time.Duration
@@ -56,7 +56,7 @@ class MainActivity : FragmentActivity() {
     fun togglePeriodicWork(button: View) {
         Log.d(TAG, "togglePeriodicWork()")
 
-        if ((button as ToggleButton).isChecked) {
+        if ((button as CompoundButton).isChecked) {
             workManager.enqueueUniquePeriodicWork(
                 periodicWorkTag,
                 ExistingPeriodicWorkPolicy.REPLACE,
@@ -83,8 +83,9 @@ class MainActivity : FragmentActivity() {
         Log.i(TAG, "periodic work ${if (enabled) "en" else "dis"}abled")
         Log.d(TAG, workInfos.toString())
 
-        val btnEnabled = findViewById<ToggleButton>(R.id.btnEnabled)
-        btnEnabled.isChecked = enabled
-        btnEnabled.isEnabled = true
+        findViewById<CompoundButton>(R.id.btnEnabled).apply {
+            isChecked = enabled
+            isEnabled = true
+        }
     }
 }

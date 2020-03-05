@@ -31,6 +31,9 @@ jobs:
           TMPDIR: ${{ runner.temp }}
         run: mkdir -p "${TMPDIR}/sdk-overlay/"{merged,upper,work}
 
+      ## cache dependencies:
+      # pre-installed tools: $ImageVersion
+      # buildToolsVersion: app/build.gradle
       - name: Cache SDK updates
         uses: actions/cache@v1
         env:
@@ -47,7 +50,8 @@ jobs:
           sudo chown "${USER}.${USER}" "${TMPDIR}/sdk-overlay/merged"
           ls -la "${TMPDIR}/sdk-overlay/merged/"
 
-      # TODO: /build.gradle contains gradle-plugin version. include in hash?
+      ## cache dependencies:
+      # gradle version: gradle/wrapper/gradle-wrapper.properties
       - name: Cache gradle/wrapper
         uses: actions/cache@v1
         env:
@@ -56,13 +60,17 @@ jobs:
           path: .gradle/wrapper
           key: ${{ env.cache-name }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
 
+      ## cache dependencies:
+      # gradle version: gradle/wrapper/gradle-wrapper.properties
+      # kotlin version: build.gradle
+      # libraries: app/build.gradle
       - name: Cache gradle/caches
         uses: actions/cache@v1
         env:
           cache-name: cache-gradle-caches
         with:
           path: .gradle/caches
-          key: ${{ env.cache-name }}-${{ hashFiles('app/build.gradle') }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+          key: ${{ env.cache-name }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('build.gradle') }}-${{ hashFiles('app/build.gradle') }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew

@@ -1,79 +1,73 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory
-        android:title="@string/prefDataSettings"
+        app:title="@string/prefDataSettings"
         app:iconSpaceReserved="false">
 
         <SwitchPreference
-            android:defaultValue="true"
+            app:defaultValue="true"
             app:iconSpaceReserved="false"
             app:key="ActionBattery"
             app:title="@string/prefActionBattery"/>
 
         <SwitchPreference
-            android:defaultValue="false"
+            app:defaultValue="false"
             app:iconSpaceReserved="false"
             app:key="ActionConn"
             app:title="@string/prefActionConn"/>
 
         <SwitchPreference
-            android:defaultValue="false"
+            app:defaultValue="false"
             app:iconSpaceReserved="false"
             app:key="ActionLocGPS"
             app:title="@string/prefActionLocGPS"/>
 
         <SwitchPreference
-            android:defaultValue="false"
+            app:defaultValue="false"
             app:iconSpaceReserved="false"
             app:key="ActionLocNet"
             app:title="@string/prefActionLocNet"/>
 
         <SwitchPreference
-            android:defaultValue="false"
+            app:defaultValue="false"
             app:iconSpaceReserved="false"
             app:key="ActionWifi"
             app:title="@string/prefActionWifi"/>
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="@string/prefClientSettings"
+        app:title="@string/prefClientSettings"
         app:iconSpaceReserved="false">
 
         <EditTextPreference
-            android:key="ClientID"
-            android:singleLine="true"
-            android:title="@string/prefClientID"
+            app:key="ClientID"
+            app:title="@string/prefClientID"
             app:iconSpaceReserved="false"
             app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference
-            android:key="SecretKey"
-            android:singleLine="true"
-            android:title="@string/prefSecretKey"
+            app:key="SecretKey"
+            app:title="@string/prefSecretKey"
             app:iconSpaceReserved="false"
             app:useSimpleSummaryProvider="false" />
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="@string/prefServerSettings"
+        app:title="@string/prefServerSettings"
         app:iconSpaceReserved="false">
 
         <EditTextPreference
-            android:defaultValue="andvari.openchaos.org"
-            android:key="Host"
-            android:singleLine="true"
-            android:title="@string/prefServerName"
+            app:defaultValue=""
+            app:key="Host"
+            app:title="@string/prefServerName"
             app:iconSpaceReserved="false"
             app:useSimpleSummaryProvider="true" />
 
         <!-- TODO: inputType="number" no longer selects the numeric keyboard -->
         <EditTextPreference
-            android:defaultValue="8891"
-            android:inputType="number"
-            android:key="Port"
-            android:maxLength="5"
-            android:title="@string/prefServerPort"
+            app:defaultValue=""
+            app:key="Port"
+            app:title="@string/prefServerPort"
             app:iconSpaceReserved="false"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>

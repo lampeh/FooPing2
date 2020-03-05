@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.annotation.Keep
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SwitchPreference
+import androidx.preference.TwoStatePreference
 
 
 @Keep // PreferenceFragments referenced in layout XML only
@@ -44,7 +44,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         // request permissions where required
         listOf("ActionLocGPS", "ActionLocNet", "ActionWifi").forEach {
-            findPreference<SwitchPreference>(it)?.setOnPreferenceChangeListener { _, newValue ->
+            findPreference<TwoStatePreference>(it)?.setOnPreferenceChangeListener { _, newValue ->
                 if (newValue as Boolean) {
                     requirePermission(Manifest.permission.ACCESS_FINE_LOCATION)
                 } else {
