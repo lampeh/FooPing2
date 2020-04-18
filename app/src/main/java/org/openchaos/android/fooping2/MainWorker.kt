@@ -83,16 +83,16 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         val prefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
 
         // initialize keys
-        MessageDigest.getInstance("SHA-256").also { md ->
+        with (MessageDigest.getInstance("SHA-256")) {
             val secret = prefs.getString("SecretKey", null)
             if (secret.isNullOrEmpty()) {
                 Log.e(TAG, "No encryption key")
                 return Result.failure()
             }
 
-            val cryptKeyHash = md.digest(secret.toByteArray())
-            cryptKeySpec = SecretKeySpec(cryptKeyHash, "AES")
-            hmacKeySpec = SecretKeySpec(md.digest(cryptKeyHash), "HmacSHA256")
+            val cryptKeyHash = digest(secret.toByteArray())
+            cryptKeySpec = SecretKeySpec(cryptKeyHash, "AES") // encryption key = sha256(secret)
+            hmacKeySpec = SecretKeySpec(digest(cryptKeyHash), "HmacSHA256") // hmac key = sha256(sha256(secret))
         }
 
         // verify config, prepare socket
