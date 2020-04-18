@@ -33,31 +33,21 @@ import javax.crypto.spec.SecretKeySpec
 
 
 class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
-
     private val TAG: String = this.javaClass.simpleName
 
     private lateinit var cryptKeySpec: SecretKeySpec
     private lateinit var hmacKeySpec: SecretKeySpec
 
+    private val socket = DatagramSocket()
+
 
     @Suppress("NOTHING_TO_INLINE")
     private inline fun roundValue(value: Double, scale: Int): Double {
-        return BigDecimal.valueOf(value).setScale(scale, BigDecimal.ROUND_HALF_UP)
-            .stripTrailingZeros().toDouble()
+        // TODO: is .stripTrailingZeros() required or cargo-cult from v1?
+        return BigDecimal.valueOf(value).setScale(scale, BigDecimal.ROUND_HALF_UP).stripTrailingZeros().toDouble()
     }
 
-    private fun setKeys(secret: String) {
-        val md = MessageDigest.getInstance("SHA-256")
-        val cryptKeyHash = md.digest(secret.toByteArray())
-
-        // encryption key = sha256(secret)
-        cryptKeySpec = SecretKeySpec(cryptKeyHash, "AES")
-
-        // hmac key = sha256(sha256(secret))
-        hmacKeySpec = SecretKeySpec(md.digest(cryptKeyHash), "HmacSHA256")
-    }
-
-    private fun sendMessage(socket: DatagramSocket, json: JSONObject) {
+    private fun sendMessage(json: JSONObject) {
         Log.d(TAG, "sendMessage(): $json")
 
         val cipher = Cipher.getInstance("AES/CFB8/NoPadding").apply { init(Cipher.ENCRYPT_MODE, cryptKeySpec) }
@@ -88,21 +78,22 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
     override fun doWork(): Result {
         Log.d(TAG, "doWork()")
 
-        val locationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager?
-
         val ts = System.currentTimeMillis()
-
+        val locationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager?
         val prefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
 
-        val secret = prefs.getString("SecretKey", null)
-        if (secret.isNullOrEmpty()) {
-            Log.e(TAG, "No encryption key")
-            return Result.failure()
+        // initialize keys
+        MessageDigest.getInstance("SHA-256").also { md ->
+            val secret = prefs.getString("SecretKey", null)
+            if (secret.isNullOrEmpty()) {
+                Log.e(TAG, "No encryption key")
+                return Result.failure()
+            }
+
+            val cryptKeyHash = md.digest(secret.toByteArray())
+            cryptKeySpec = SecretKeySpec(cryptKeyHash, "AES")
+            hmacKeySpec = SecretKeySpec(md.digest(cryptKeyHash), "HmacSHA256")
         }
-
-        setKeys(secret)
-
-        val socket = DatagramSocket()
 
         // verify config, prepare socket
         try {
@@ -130,38 +121,39 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
 
         // Simple ping
         try {
-            sendMessage(socket, JSONObject().put("ts", ts))
+            sendMessage(JSONObject().put("ts", ts))
         } catch (e: Exception) {
             Log.e(TAG, "ActionPing failed", e)
             socket.close()
-            return Result.failure() // defer work if this packet didn't get sent
+            return Result.retry() // defer work if this packet didn't get sent
         }
 
         // Battery info
         try {
             if (prefs.getBoolean("ActionBattery", false)) {
-                sendMessage(socket, JSONObject()
-                    .put("ts", ts)
-                    .put("battery", JSONObject().apply {
-                        (applicationContext.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)))?.apply {
-                            put("health", getIntExtra(BatteryManager.EXTRA_HEALTH, -1))
-                            put("status", getIntExtra(BatteryManager.EXTRA_STATUS, -1))
-                            put("plug", getIntExtra(BatteryManager.EXTRA_PLUGGED, -1))
-                            put("volt", getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1))
-                            put("temp", getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1))
-                            put("tech", getStringExtra(BatteryManager.EXTRA_TECHNOLOGY))
-                            val level = getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
-                            val scale = getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-                            if (level >= 0 && scale > 0) {
-                                put("pct", roundValue(level.toDouble() / scale.toDouble() * 100, 2))
-                            } else {
-                                Log.w(TAG, "Battery level unknown")
-                                put("pct", -1)
+                sendMessage(
+                    JSONObject()
+                        .put("ts", ts)
+                        .put("battery", JSONObject().apply {
+                            (applicationContext.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)))?.apply {
+                                put("health", getIntExtra(BatteryManager.EXTRA_HEALTH, -1))
+                                put("status", getIntExtra(BatteryManager.EXTRA_STATUS, -1))
+                                put("plug", getIntExtra(BatteryManager.EXTRA_PLUGGED, -1))
+                                put("volt", getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1))
+                                put("temp", getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1))
+                                put("tech", getStringExtra(BatteryManager.EXTRA_TECHNOLOGY))
+                                val level = getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+                                val scale = getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+                                if (level >= 0 && scale > 0) {
+                                    put("pct", roundValue(level.toDouble() / scale.toDouble() * 100, 2))
+                                } else {
+                                    Log.w(TAG, "Battery level unknown")
+                                    put("pct", -1)
+                                }
+                            } ?: apply {
+                                Log.w(TAG, "No battery information available")
                             }
-                        } ?: apply {
-                            Log.w(TAG, "No battery information available")
-                        }
-                    })
+                        })
                 )
             }
         } catch (e: Exception) {
@@ -172,24 +164,25 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         // Network connection status
         try {
             if (prefs.getBoolean("ActionConn", false)) {
-                sendMessage(socket, JSONObject()
-                    .put("ts", ts)
-                    .put("conn_active", JSONObject().apply {
-                        (applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?)
-                            ?.activeNetworkInfo
-                            ?.apply {
-                                put("type", typeName)
-                                put("subtype", subtypeName)
-                                put("connected", isConnected)
-                                put("available", isAvailable)
-                                put("roaming", isRoaming)
-                                put("failover", isFailover)
-                                put("extra", extraInfo)
-                                put("reason", reason)
-                            } ?: apply {
-                                Log.d(TAG, "No connection information available")
-                        }
-                    })
+                sendMessage(
+                    JSONObject()
+                        .put("ts", ts)
+                        .put("conn_active", JSONObject().apply {
+                            (applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?)
+                                ?.activeNetworkInfo
+                                ?.apply {
+                                    put("type", typeName)
+                                    put("subtype", subtypeName)
+                                    put("connected", isConnected)
+                                    put("available", isAvailable)
+                                    put("roaming", isRoaming)
+                                    put("failover", isFailover)
+                                    put("extra", extraInfo)
+                                    put("reason", reason)
+                                } ?: apply {
+                                    Log.d(TAG, "No connection information available")
+                            }
+                        })
                 )
             }
         } catch (e: Exception) {
@@ -199,7 +192,7 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         // Cached GPS location
         try {
             if (prefs.getBoolean("ActionLocGPS", false)) {
-                sendMessage(socket, JSONObject()
+                sendMessage(JSONObject()
                     .put("ts", ts)
                     .put("loc_gps", JSONObject().apply {
                         locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
@@ -226,7 +219,7 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         // Cached network location
         try {
             if (prefs.getBoolean("ActionLocNet", false)) {
-                sendMessage(socket, JSONObject()
+                sendMessage(JSONObject()
                     .put("ts", ts)
                     .put("loc_net", JSONObject().apply {
                         locationManager?.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
@@ -253,26 +246,27 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         // Cached WIFI scan results
         try {
             if (prefs.getBoolean("ActionWifi", false)) {
-                sendMessage(socket, JSONObject()
-                    .put("ts", ts)
-                    .put("wifi", JSONArray().apply {
-                        (applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager?)
-                            ?.scanResults?.forEach {
-                                put(JSONObject().apply {
-                                    put("BSSID", it.BSSID)
-                                    put("SSID", it.SSID)
-                                    put("freq", it.frequency)
-                                    put("level",it.level)
-                                    put("width", it.channelWidth)
-                                    put("caps", it.capabilities)
-                                    // put("venue", it.venueName)
-                                    // put("centerFreq0", it.centerFreq0)
-                                    // put("centerFreq1", it.centerFreq1)
-                                })
-                        } ?: apply {
-                            Log.d(TAG, "No wifi scan available")
-                        }
-                    })
+                sendMessage(
+                    JSONObject()
+                        .put("ts", ts)
+                        .put("wifi", JSONArray().apply {
+                            (applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager?)
+                                ?.scanResults?.forEach {
+                                    put(JSONObject().apply {
+                                        put("BSSID", it.BSSID)
+                                        put("SSID", it.SSID)
+                                        put("freq", it.frequency)
+                                        put("level",it.level)
+                                        put("width", it.channelWidth)
+                                        put("caps", it.capabilities)
+                                        // put("venue", it.venueName)
+                                        // put("centerFreq0", it.centerFreq0)
+                                        // put("centerFreq1", it.centerFreq1)
+                                    })
+                            } ?: apply {
+                                Log.d(TAG, "No wifi scan available")
+                            }
+                        })
                 )
             }
         } catch (e: Exception) {
