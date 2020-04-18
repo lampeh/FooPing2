@@ -51,23 +51,23 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         Log.d(TAG, "sendMessage(): $json")
 
         val cipher = Cipher.getInstance("AES/CFB8/NoPadding").apply { init(Cipher.ENCRYPT_MODE, cryptKeySpec) }
-        val baos = ByteArrayOutputStream()
+        val buffer = ByteArrayOutputStream()
 
         // TODO: header flags
 
         // store IV block first
-        baos.write(cipher.iv)
+        buffer.write(cipher.iv)
 
         // compress and encrypt
-        GZIPOutputStream(CipherOutputStream(baos, cipher)).apply {
+        GZIPOutputStream(CipherOutputStream(buffer, cipher)).apply {
             write(json.toString().toByteArray())
             close()
         }
 
         // append HMAC
-        baos.write(Mac.getInstance("HmacSHA256").apply { init(hmacKeySpec) }.doFinal(baos.toByteArray()))
+        buffer.write(Mac.getInstance("HmacSHA256").apply { init(hmacKeySpec) }.doFinal(buffer.toByteArray()))
 
-        val output = baos.toByteArray()
+        val output = buffer.toByteArray()
         Log.d(TAG, "sending ${output.size} bytes")
 
         // TODO: check maximum datagram size
