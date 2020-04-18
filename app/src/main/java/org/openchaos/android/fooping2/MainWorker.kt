@@ -251,17 +251,21 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                         .put("ts", ts)
                         .put("wifi", JSONArray().apply {
                             (applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager?)
-                                ?.scanResults?.forEach {
+                                ?.scanResults?.forEach { ap ->
                                     put(JSONObject().apply {
-                                        put("BSSID", it.BSSID)
-                                        put("SSID", it.SSID)
-                                        put("freq", it.frequency)
-                                        put("level",it.level)
-                                        put("width", it.channelWidth)
-                                        put("caps", it.capabilities)
-                                        // put("venue", it.venueName)
-                                        // put("centerFreq0", it.centerFreq0)
-                                        // put("centerFreq1", it.centerFreq1)
+                                        put("BSSID", ap.BSSID)
+                                        put("SSID", ap.SSID)
+                                        put("freq", ap.frequency)
+                                        put("level",ap.level)
+                                        put("width", ap.channelWidth)
+                                        put("caps", ap.capabilities)
+                                        put("freq0", ap.centerFreq0.takeIf { it != 0 })
+                                        put("freq1", ap.centerFreq1.takeIf { it != 0 })
+                                        put("802.11mc", ap.is80211mcResponder.takeIf { it })
+                                        put("passpoint", ap.isPasspointNetwork.takeIf { it })
+                                        put("operator", ap.operatorFriendlyName.ifBlank { null })
+                                        put("venue", ap.venueName.ifBlank { null })
+                                        // put("_TBD_", ap.wifiStandard) // TODO: requires SDK 30+
                                     })
                             } ?: apply {
                                 Log.d(TAG, "No wifi scan available")
