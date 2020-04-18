@@ -67,11 +67,9 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         // append HMAC
         buffer.write(Mac.getInstance("HmacSHA256").apply { init(hmacKeySpec) }.doFinal(buffer.toByteArray()))
 
-        val output = buffer.toByteArray()
-        Log.d(TAG, "sending ${output.size} bytes")
-
         // TODO: check maximum datagram size
-        socket.send(DatagramPacket(output, output.size, socket.remoteSocketAddress))
+        Log.d(TAG, "sending ${buffer.size()} bytes")
+        socket.send(DatagramPacket(buffer.toByteArray(), buffer.size(), socket.remoteSocketAddress))
     }
 
     @SuppressLint("MissingPermission")
