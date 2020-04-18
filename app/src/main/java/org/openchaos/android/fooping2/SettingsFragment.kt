@@ -12,7 +12,6 @@ import androidx.preference.TwoStatePreference
 @Keep // PreferenceFragments referenced in layout XML only
 @Suppress("unused")
 class SettingsFragment : PreferenceFragmentCompat() {
-
     private val TAG: String = this.javaClass.simpleName
 
 

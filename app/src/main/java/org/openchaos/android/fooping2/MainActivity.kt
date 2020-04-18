@@ -11,12 +11,11 @@ import java.time.Duration
 
 
 class MainActivity : FragmentActivity() {
-
     private val TAG: String = this.javaClass.simpleName
 
-    // TODO: maybe prefix work tags with class name
-
     private val workManager: WorkManager = WorkManager.getInstance(this)
+
+    // TODO: maybe prefix work tags with class name
 
     private val oneTimeWorkTag: String = "Vasily" // One ping only
     private val oneTimeWorkRequest = OneTimeWorkRequest.from(MainWorker::class.java)
