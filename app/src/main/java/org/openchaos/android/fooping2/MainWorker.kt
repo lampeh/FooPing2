@@ -38,7 +38,7 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
     private lateinit var cryptKeySpec: SecretKeySpec
     private lateinit var hmacKeySpec: SecretKeySpec
 
-    private val socket = DatagramSocket()
+    private lateinit var socket: DatagramSocket
 
 
     @Suppress("NOTHING_TO_INLINE")
@@ -113,7 +113,7 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
             val hostAddress = InetAddress.getByName(hostName)
             Log.i(TAG, "Server address: $hostAddress")
 
-            socket.connect(hostAddress, portNumber)
+            socket = DatagramSocket().apply { connect(hostAddress, portNumber) }
         } catch (e: Exception) {
             Log.e(TAG, "Could not connect socket", e)
             return Result.failure()
