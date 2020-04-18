@@ -3,8 +3,10 @@ package org.openchaos.android.fooping2
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import androidx.annotation.Keep
+import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.TwoStatePreference
 
@@ -48,6 +50,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     requirePermission(Manifest.permission.ACCESS_FINE_LOCATION)
                 } else {
                     true
+                }
+            }
+        }
+
+        // set numeric input
+        listOf("Port").forEach {
+            findPreference<EditTextPreference>(it)?.apply {
+                setOnBindEditTextListener { editText ->
+                    editText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
                 }
             }
         }
