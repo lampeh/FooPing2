@@ -59,10 +59,7 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
         buffer.write(cipher.iv)
 
         // compress and encrypt
-        GZIPOutputStream(CipherOutputStream(buffer, cipher)).apply {
-            write(json.toString().toByteArray())
-            close()
-        }
+        GZIPOutputStream(CipherOutputStream(buffer, cipher)).use { it.write(json.toString().toByteArray()) }
 
         // append HMAC
         buffer.write(Mac.getInstance("HmacSHA256").apply { init(hmacKeySpec) }.doFinal(buffer.toByteArray()))
