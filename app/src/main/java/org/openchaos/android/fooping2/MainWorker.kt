@@ -198,10 +198,11 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                                 put("ts", time)
                                 put("lat", latitude)
                                 put("lon", longitude)
-                                if (hasAltitude()) put("alt", roundValue(altitude, 4))
-                                if (hasAccuracy()) put("acc", roundValue(accuracy.toDouble(), 4))
-                                if (hasSpeed()) put("speed", roundValue(speed.toDouble(), 4))
-                                if (hasBearing()) put("bearing", roundValue(bearing.toDouble(), 4))
+                                // TODO: style? "takeIf" variant looks better but forces math
+                                put("alt", roundValue(altitude, 4).takeIf { hasAltitude() })
+                                put("acc", roundValue(accuracy.toDouble(), 4).takeIf { hasAccuracy() })
+                                put("speed", roundValue(speed.toDouble(), 4).takeIf { hasSpeed() })
+                                put("bearing", roundValue(bearing.toDouble(), 4).takeIf { hasBearing() })
                             } ?: apply {
                                 Log.d(TAG, "No GPS location available")
                                 // put("ts", -1)
@@ -225,6 +226,7 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                                 put("ts", time)
                                 put("lat", latitude)
                                 put("lon", longitude)
+                                // TODO: style? "if" variant avoids unnecessary math calls but breaks combo
                                 if (hasAltitude()) put("alt", roundValue(altitude, 4))
                                 if (hasAccuracy()) put("acc", roundValue(accuracy.toDouble(), 4))
                                 if (hasSpeed()) put("speed", roundValue(speed.toDouble(), 4))
