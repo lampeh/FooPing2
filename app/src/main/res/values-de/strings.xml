@@ -7,4 +7,9 @@
     <string name="prefActionWifi">WLAN-Scan</string>
     <string name="prefDataSettings">Datenquellen</string>
     <string name="prefServerSettings">Servereinstellungen</string>
+    <string name="prefSecretKey">Passwort</string>
+    <string name="prefServerName">Host</string>
+    <string name="prefServerPort">Port</string>
+    <string name="btnNow">Jetzt senden</string>
+    <string name="btnNowClicked">Ihr Paket ist unterwegs</string>
 </resources>

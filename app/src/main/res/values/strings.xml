@@ -2,12 +2,10 @@
     <string name="app_name" translatable="false">FooPing</string>
     <string name="app_desc" translatable="false">…</string>
 
-    <string name="btnNow" translatable="false">Send now</string>
-
-    <string name="btnNowClicked" translatable="false">Pings away</string>
+    <string name="btnNow">Send now</string>
+    <string name="btnNowClicked">Pings away</string>
 
     <string name="prefDataSettings">Data sources</string>
-    <string name="prefClientSettings" translatable="false">Client settings</string>
     <string name="prefServerSettings">Server settings</string>
 
     <string name="prefActionBattery">Battery info</string>
@@ -16,9 +14,7 @@
     <string name="prefActionLocNet">Last Network location</string>
     <string name="prefActionWifi">WIFI scan</string>
 
-    <string name="prefClientID" translatable="false">Client ID</string>
-    <string name="prefSecretKey" translatable="false">Encryption key</string>
-
-    <string name="prefServerName" translatable="false">Host</string>
-    <string name="prefServerPort" translatable="false">Port</string>
+    <string name="prefServerName">Host</string>
+    <string name="prefServerPort">Port</string>
+    <string name="prefSecretKey">Password</string>
 </resources>

@@ -37,17 +37,6 @@
 
     <PreferenceCategory
         app:iconSpaceReserved="false"
-        app:title="@string/prefClientSettings">
-
-        <EditTextPreference
-            app:iconSpaceReserved="false"
-            app:key="SecretKey"
-            app:title="@string/prefSecretKey"
-            app:useSimpleSummaryProvider="false" />
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        app:iconSpaceReserved="false"
         app:title="@string/prefServerSettings">
 
         <EditTextPreference
@@ -61,5 +50,11 @@
             app:key="Port"
             app:title="@string/prefServerPort"
             app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:iconSpaceReserved="false"
+            app:key="SecretKey"
+            app:title="@string/prefSecretKey"
+            app:useSimpleSummaryProvider="false" />
     </PreferenceCategory>
 </PreferenceScreen>
