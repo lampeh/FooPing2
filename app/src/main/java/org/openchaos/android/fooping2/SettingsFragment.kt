@@ -5,14 +5,11 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
-import androidx.annotation.Keep
 import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.TwoStatePreference
 
 
-@Keep // PreferenceFragments referenced in layout XML only
-@Suppress("unused")
 class SettingsFragment : PreferenceFragmentCompat() {
     private val TAG: String = this.javaClass.simpleName
 
