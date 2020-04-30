@@ -8,6 +8,7 @@ import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import android.os.BatteryManager
+import android.os.SystemClock
 import android.util.Log
 import androidx.preference.PreferenceManager
 import androidx.work.Worker
@@ -262,6 +263,7 @@ class MainWorker(appContext: Context, workerParams: WorkerParameters) : Worker(a
                                         put("passpoint", ap.isPasspointNetwork.takeIf { it })
                                         put("operator", ap.operatorFriendlyName.ifBlank { null })
                                         put("venue", ap.venueName.ifBlank { null })
+                                        put("age", (SystemClock.elapsedRealtime() - (ap.timestamp / 1000)))
                                         // put("_TBD_", ap.wifiStandard) // TODO: requires SDK 30+
                                     })
                             } ?: apply {
