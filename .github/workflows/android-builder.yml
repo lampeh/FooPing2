@@ -83,19 +83,19 @@ jobs:
         run: ./gradlew --warning-mode all clean build
 
       - name: Archive APKs
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: FooPing2-apk
           path: app/build/outputs/apk/
 
-      - name: Archive R8 Mapping
-        uses: actions/upload-artifact@v1
+      - name: Append R8 Mappings
+        uses: actions/upload-artifact@v2
         with:
-          name: FooPing2-mapping
+          name: FooPing2-apk
           path: app/build/outputs/mapping/
 
       - name: Archive Reports
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: FooPing2-reports
           path: app/build/reports/
